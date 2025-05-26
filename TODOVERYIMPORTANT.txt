@@ -1,0 +1,9 @@
+todo
+ws on canteen orders
+											previous orders for users--done
+													search---done
+payment - razorpay
+												remove cash on delivery--DONE
+										add Delivery location to the orders in The backend--DONE
+store the cart details in the frontend
+language translation - telugu english hindi

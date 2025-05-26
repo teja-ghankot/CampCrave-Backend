@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/authdb', {
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://teja:JycR56DZQ7MMfIzb@cluster0.yccd7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log('MongoDB connected'))

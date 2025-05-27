@@ -284,7 +284,52 @@ app.post('/wallet/add', async (req, res) => {
     });
   }
 });
+app.get('/wallet', async (req, res) => {
+  try {
+    const { userId } = req.query;
 
+    // Validate userId
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+        data: null
+      });
+    }
+
+    // Find user and get wallet balance
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+        data: null
+      });
+    }
+
+    // Return wallet balance
+    // Assuming wallet balance is stored in user.walletBalance field
+    const balance = user.wallet || 0;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Wallet balance fetched successfully',
+      data: {
+        balance: balance,
+        userId: userId
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching wallet balance:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+});
 // Listen
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

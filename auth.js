@@ -330,6 +330,72 @@ app.get('/wallet', async (req, res) => {
     });
   }
 });
+app.post('/wallet/deduct', async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+
+    // Basic validation
+    if (!userId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId and amount are required'
+      });
+    }
+
+    if (amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    // Find user first to check current balance
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if user has sufficient balance
+    if (user.wallet < amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient wallet balance',
+        data: {
+          currentBalance: user.wallet,
+          requestedAmount: amount
+        }
+      });
+    }
+
+    // Update wallet by deducting amount
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { wallet: -amount } }, // Decrement wallet by amount
+      { new: true } // Return updated document
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Wallet updated successfully',
+      data: {
+        userId: updatedUser._id,
+        newBalance: updatedUser.wallet,
+        amountDeducted: amount
+      }
+    });
+
+  } catch (error) {
+    console.error('Wallet deduct error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
 // Listen
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);

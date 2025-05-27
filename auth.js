@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, default: 'student' },
+  wallet:{ type: Number, default: 0 }, // Add wallet field
 });
 const User = mongoose.model('User', userSchema);
 
@@ -229,6 +230,58 @@ app.patch('/orders/:id/status', async (req, res) => {
     res.status(200).json(order);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update order status' });
+  }
+});
+
+app.post('/wallet/add', async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+
+    // Basic validation
+    if (!userId || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'userId and amount are required'
+      });
+    }
+
+    if (amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount must be greater than 0'
+      });
+    }
+
+    // Find user and update wallet
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { wallet: amount } }, // Increment wallet by amount
+      { new: true } // Return updated document
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Wallet updated successfully',
+      data: {
+        userId: user._id,
+        newBalance: user.wallet,
+        amountAdded: amount
+      }
+    });
+
+  } catch (error) {
+    console.error('Wallet update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
   }
 });
 

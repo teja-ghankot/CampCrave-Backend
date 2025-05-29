@@ -7,8 +7,8 @@ from surprise.model_selection import train_test_split
 app = Flask(__name__)
 
 # MongoDB setup
-client = MongoClient("mongodb://localhost:27017")
-db = client.authdb
+client = MongoClient("mongodb+srv://teja:teja2005@cluster0.yccd7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client.test
 
 def train_model():
     orders = db.orders.find()

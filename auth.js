@@ -18,7 +18,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 app.use(cors());
 app.use(bodyParser.json());
 
-// Attach io instance to request
 app.use((req, res, next) => {
   req.io = io;
   next();
@@ -30,7 +29,6 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://teja:teja2005@cluster0.
 }).then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Schemas & Models
 const menuItemSchema = new mongoose.Schema({
   name: String,
   category: String,
@@ -60,8 +58,6 @@ const orderSchema = new mongoose.Schema({
 });
 
 const Order = mongoose.model('Order', orderSchema);
-
-// Routes
 app.post('/register', async (req, res) => {
   const { phone, email, password, role } = req.body;
   if (!phone || !email || !password) return res.status(400).json({ message: 'All fields are required.' });
@@ -114,18 +110,14 @@ app.get('/menu/available', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch available items' });
   }
 });
-
-// Availability update with real-time emit
 app.patch('/menu/availability', async (req, res) => {
   const { items } = req.body;
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ message: 'No items provided.' });
   }
   try {
-    // Reset all
     await MenuItem.updateMany({}, { $set: { availability: false, quantity: 0 } });
 
-    // Update selected
     const updatedDocs = [];
     for (const item of items) {
       const updated = await MenuItem.findOneAndUpdate(
@@ -136,7 +128,7 @@ app.patch('/menu/availability', async (req, res) => {
       if (updated) updatedDocs.push(updated);
     }
 
-    // Emit real-time update
+
     req.io.emit('menu-updated', updatedDocs);
 
     res.status(200).json({ message: 'Menu updated successfully.', updated: updatedDocs });
@@ -146,14 +138,13 @@ app.patch('/menu/availability', async (req, res) => {
   }
 });
 
-// Fetch previous orders for a specific user
 app.get('/orders/history', async (req, res) => {
   const { userId } = req.query;
 
   if (!userId) return res.status(400).json({ message: 'User ID is required.' });
 
   try {
-    // Fetch orders for the user
+
     const orders = await Order.find({ userId }).sort({ orderDate: -1 });
 
     if (orders.length === 0) {
@@ -349,7 +340,7 @@ app.post('/wallet/deduct', async (req, res) => {
       });
     }
 
-    // Find user first to check current balance
+  
     const user = await User.findById(userId);
 
     if (!user) {
@@ -359,7 +350,7 @@ app.post('/wallet/deduct', async (req, res) => {
       });
     }
 
-    // Check if user has sufficient balance
+
     if (user.wallet < amount) {
       return res.status(400).json({
         success: false,
@@ -371,11 +362,11 @@ app.post('/wallet/deduct', async (req, res) => {
       });
     }
 
-    // Update wallet by deducting amount
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $inc: { wallet: -amount } }, // Decrement wallet by amount
-      { new: true } // Return updated document
+      { $inc: { wallet: -amount } }, 
+      { new: true } 
     );
 
     res.status(200).json({
@@ -396,7 +387,6 @@ app.post('/wallet/deduct', async (req, res) => {
     });
   }
 });
-// Listen
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });

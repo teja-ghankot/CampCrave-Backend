@@ -56,4 +56,4 @@ def recommend(user_id):
 
 if __name__ == '__main__':
     # CHANGED: Added host='0.0.0.0' to accept external connections
-    app.run(host='0.0.0.0',port=3000, debug=True)
+    app.run(host='0.0.0.0', debug=True)

@@ -2,3 +2,4 @@ Flask
 pymongo
 pandas
 scikit-surprise
+numpy<2
